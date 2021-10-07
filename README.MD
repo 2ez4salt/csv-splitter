@@ -19,14 +19,14 @@ go get
 <h5><i>IMPORTANT! You need install this package.</i></h5>
 
 ```
-bash npm i -g secure-spreadsheet  
+npm i -g secure-spreadsheet  
 ``` 
 # Encryption
 
 This tool uses  [hashids](https://hashids.org/), for custom encryption settings you must set enviroment variables.
 
 
-> "U-" prefix is automaticly adding to the encrypted area for now.
+> "U-" prefix is automatically adding to the encrypted area for now.
 
 ### Bash
 ```bash 

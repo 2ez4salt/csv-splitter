@@ -24,7 +24,7 @@ func encryption(param int) string {
 	hd.MinLength, _ = strconv.Atoi(os.Getenv("HASHID_MINLENGTH"))
 	h, _ := hashids.NewWithData(hd)
 	e, _ := h.Encode([]int{param})
-	return e;
+	return e
 }
 
 func readFile() {
@@ -41,18 +41,18 @@ func readFile() {
 	for scanner.Scan() {
 		if count == 0 {
 			selectedLineForEncrypting = getWhichLineEncrypted(scanner.Text())
-			f2.WriteString(scanner.Text()+"\n")
+			f2.WriteString(scanner.Text() + "\n")
 		} else {
-			row := strings.Split(scanner.Text(),",");
-			intTemp, _ := strconv.Atoi(strings.Trim(row[selectedLineForEncrypting],"\""))
+			row := strings.Split(scanner.Text(), ",")
+			intTemp, _ := strconv.Atoi(strings.Trim(row[selectedLineForEncrypting], "\""))
 			strconv.Atoi(row[selectedLineForEncrypting])
 			//fmt.Println(intTemp)
 			encrypted := "U-" + encryption(intTemp)
 			row[2] = encrypted
-			f2.WriteString(strings.Join(row,",") +"\n")
-			fmt.Println(count,". Satır okundu, işlendi, yazıldı.")
+			f2.WriteString(strings.Join(row, ",") + "\n")
+			fmt.Println(count, ". Satır okundu, işlendi, yazıldı.")
 		}
-		count++;
+		count++
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatalln(err)
@@ -65,12 +65,12 @@ func splitManipulatedFile() {
 	splitter := splitCsv.New()
 	splitter.FileChunkSize, _ = strconv.Atoi(setFileByte()) //in bytes (100MB)
 	splittedPath = setFilePathForSplittedCSVS()
-	_ , _ = splitter.Split(path + "_manipulated" + ".csv",splittedPath)
+	_, _ = splitter.Split(path+"_manipulated"+".csv", splittedPath)
 	fmt.Println("Dosya parçalanıyor.")
 	fmt.Println("Dosya parçalandı")
-	cmd := exec.Command("/bin/sh", "/Users/talhasalt/GolandProjects/awesomeProject/script.sh", splittedPath, setPasswordForSplittedFiles(),setNameForSecuredFiles())
+	cmd := exec.Command("/bin/sh", "/Users/talhasalt/GolandProjects/awesomeProject/script.sh", splittedPath, setPasswordForSplittedFiles(), setNameForSecuredFiles())
 
-	pipe, _  := cmd.StdoutPipe()
+	pipe, _ := cmd.StdoutPipe()
 	if err := cmd.Start(); err != nil {
 
 	}
@@ -82,34 +82,72 @@ func splitManipulatedFile() {
 	}
 }
 
+func splitNonEncryptedFiles() {
+	path = getFilePath()
+	splitter := splitCsv.New()
+	splitter.FileChunkSize, _ = strconv.Atoi(setFileByte()) //in bytes (100MB)
+	splittedPath = setFilePathForSplittedCSVS()
+	_, _ = splitter.Split(path+".csv", splittedPath)
+	fmt.Println("Dosya parçalanıyor.")
+	fmt.Println("Dosya parçalandı")
+	cmd := exec.Command("/bin/sh", "/Users/talhasalt/GolandProjects/awesomeProject/script.sh", splittedPath, setPasswordForSplittedFiles(), setNameForSecuredFiles())
+
+	pipe, _ := cmd.StdoutPipe()
+	if err := cmd.Start(); err != nil {
+
+	}
+	reader := bufio.NewReader(pipe)
+	line, err := reader.ReadString('\n')
+	for err == nil {
+		fmt.Println(line)
+		line, err = reader.ReadString('\n')
+	}
+}
 
 func main() {
 	var image = "\n ██████ ███████ ██    ██     ███████ ██████  ██      ██ ████████ ████████ ███████ ██████  \n██      ██      ██    ██     ██      ██   ██ ██      ██    ██       ██    ██      ██   ██ \n██      ███████ ██    ██     ███████ ██████  ██      ██    ██       ██    █████   ██████  \n██           ██  ██  ██           ██ ██      ██      ██    ██       ██    ██      ██   ██ \n ██████ ███████   ████       ███████ ██      ███████ ██    ██       ██    ███████ ██   ██ \n                                                                                          \n                                                                                          \n"
 	println(image)
-	readFile();
+	if isEncrypted() == "y" {
+		readFile()
+	} else {
+		splitNonEncryptedFiles()
+	}
+
+}
+
+func isEncrypted() string {
+	prompt := promptui.Prompt{
+		Label:     "Sütunlaradan herhangi birini şifrelemek istiyor musun?",
+		IsConfirm: true,
+	}
+	result, _ := prompt.Run()
+	if result != "y" && result != "n" {
+		isEncrypted()
+	}
+	return result
 }
 
 func getFilePath() string {
 	enterFilePath := promptui.Prompt{
-		Label:    "Parçalanacak dosyanın dosya konumunu gir (Sonuna '.csv' yazma)",
+		Label: "Parçalanacak dosyanın dosya konumunu gir (Sonuna '.csv' yazma)",
 	}
 	enteredFilePath, _ := enterFilePath.Run()
 	return enteredFilePath
 }
 
 func getWhichLineEncrypted(line string) int {
-	row := strings.Split(line,",");
+	row := strings.Split(line, ",")
 	prompt := promptui.Select{
 		Label: "Şifrelenmek istenen sütunu seçiniz",
 		Items: row,
 	}
 	_, result, _ := prompt.Run()
-	return indexOf(result,row)
+	return indexOf(result, row)
 }
 
 func setFilePathForSplittedCSVS() string {
 	enterFilePath := promptui.Prompt{
-		Label:    "Parçalanmış dosyaların dosya konumunu giriniz",
+		Label: "Parçalanmış dosyaların dosya konumunu giriniz",
 	}
 	enteredFilePath, _ := enterFilePath.Run()
 	return enteredFilePath
@@ -117,7 +155,7 @@ func setFilePathForSplittedCSVS() string {
 
 func setPasswordForSplittedFiles() string {
 	enterFilePath := promptui.Prompt{
-		Label:    "Parçalanmış dosyalar için şifreyi giriniz",
+		Label: "Parçalanmış dosyalar için şifreyi giriniz",
 	}
 	enteredFilePath, _ := enterFilePath.Run()
 	return enteredFilePath
@@ -125,7 +163,7 @@ func setPasswordForSplittedFiles() string {
 
 func setFileByte() string {
 	setFileByte := promptui.Prompt{
-		Label:    "Parça boyutunu giriniz",
+		Label: "Parça boyutunu giriniz",
 	}
 	settedFileByte, _ := setFileByte.Run()
 	return settedFileByte
@@ -133,13 +171,13 @@ func setFileByte() string {
 
 func setNameForSecuredFiles() string {
 	enterFilePath := promptui.Prompt{
-		Label:    "Şifrelenmiş dosyalar için isim gir",
+		Label: "Şifrelenmiş dosyalar için isim gir",
 	}
 	enteredFilePath, _ := enterFilePath.Run()
 	return enteredFilePath
 }
 
-func indexOf(element string, data []string) (int) {
+func indexOf(element string, data []string) int {
 	for k, v := range data {
 		if element == v {
 			return k

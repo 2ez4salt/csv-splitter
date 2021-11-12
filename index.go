@@ -117,7 +117,7 @@ func main() {
 
 func isEncrypted() string {
 	prompt := promptui.Prompt{
-		Label:     "Sütunlaradan herhangi birini şifrelemek istiyor musun?",
+		Label:     "Dosyayı parçalamadan önce şifrelemek istediğin bir sütun var mı?",
 		IsConfirm: true,
 	}
 	result, _ := prompt.Run()
